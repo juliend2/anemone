@@ -38,6 +38,8 @@ module Anemone
       :delay => 0,
       # don't obey the robots exclusion protocol
       :obey_robots_txt => false,
+      # timeout (in seconds) before giving up fetching robots.txt
+      :robots_txt_timeout => 3,
       # by default, don't limit the depth of the crawl
       :depth_limit => false,
       # number of times HTTP redirects will be followed
@@ -199,7 +201,10 @@ module Anemone
       @opts[:threads] = 1 if @opts[:delay] > 0
       storage = Anemone::Storage::Base.new(@opts[:storage] || Anemone::Storage.Hash)
       @pages = PageStore.new(storage)
-      @robots = Robotex.new(@opts[:user_agent]) if @opts[:obey_robots_txt]
+      if @opts[:obey_robots_txt]
+        Robotex.timeout = @opts[:robots_txt_timeout] if @opts[:robots_txt_timeout]
+        @robots = Robotex.new(@opts[:user_agent])
+      end
 
       freeze_options
     end
